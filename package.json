@@ -20,7 +20,7 @@
     "webtorrent": "^2.5.10",
     "yt-search": "^2.12.1"
       },
-  "keywords": ["Atomic", "bot", "Telegram_bot", "multi-device"],
+  "keywords": ["Atomic", "bots", "Telegram_bot", "multi-device"],
   "engines": {
     "node": "22.x"
   }
