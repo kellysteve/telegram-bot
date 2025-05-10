@@ -112,3 +112,63 @@ bot.onText(/\/play(?: (.+))?/, async (msg, match) => {
         bot.sendMessage(chatId, "❌ An error occurred while processing your request. Please try again later.");
     }
 });
+
+
+bot.onText(/\/video (.+)/, async (msg, match) => {
+    const chatId = msg.chat.id;
+    const query = match[1]?.trim();
+
+    if (!query) {
+        return bot.sendMessage(chatId, "❗ *Usage*: `/video <search term>`", { parse_mode: 'Markdown' });
+    }
+
+    try {
+        const searchMsg = await bot.sendMessage(chatId, "🔍 *Searching for your video...*", { parse_mode: "Markdown" });
+
+        // Step 1: Search for the video
+        const search = await yts(query);
+        const video = search.all[0]; // Take the first result
+        if (!video) {
+            return bot.sendMessage(chatId, "❌ Video not found!");
+        }
+
+        // Step 2: Fetch video download link from the API
+        const apiUrl = `https://apis.davidcyriltech.my.id/download/ytmp4`;
+        const response = await axios.get(apiUrl, { params: { url: video.url } });
+        const { success, result } = response.data;
+
+        if (success && result) {
+            const { title, download_url } = result;
+            const filePath = `./temp/${title.replace(/[^\w\s]/gi, '')}.mp4`;
+
+            // Step 3: Download video locally
+            const writer = fs.createWriteStream(filePath);
+            const videoStream = await axios({
+                url: download_url,
+                method: 'GET',
+                responseType: 'stream'
+            });
+
+            videoStream.data.pipe(writer);
+
+            await new Promise((resolve, reject) => {
+                writer.on('finish', resolve);
+                writer.on('error', reject);
+            });
+
+await bot.sendVideo(chatId, download_url, {
+    caption: `🎬 *Here is your video:*`,
+    parse_mode: "Markdown"
+});
+            // Step 5: Delete the file after sending
+            fs.unlinkSync(filePath);
+        } else {
+            bot.sendMessage(chatId, "❌ Failed to fetch the video. Please try again.");
+        }
+
+        await bot.deleteMessage(chatId, searchMsg.message_id);
+    } catch (err) {
+        console.error("Error in /video command:", err);
+        bot.sendMessage(chatId, "❌ An error occurred while processing your request.");
+    }
+});
