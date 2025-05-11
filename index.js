@@ -39,7 +39,7 @@ const axios = require('axios');
 const fs = require('fs');
 
 // Replace 'YOUR_TELEGRAM_BOT_TOKEN' with your bot token
-const bot = new TelegramBot('YOUR_TELEGRAM_BOT_TOKEN', { polling: true });
+const bot = new TelegramBot('7615485180:AAF7YGotzvKe7zIZop9gCRRv77T8H9YG9Ro', { polling: true });
 
 // /play command
 bot.onText(/\/play(?: (.+))?/, async (msg, match) => {
